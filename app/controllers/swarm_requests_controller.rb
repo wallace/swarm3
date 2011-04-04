@@ -85,10 +85,17 @@ class SwarmRequestsController < ApplicationController
 # Accepts a bid for a swarm request
   def accept
     
+    # Step one, look up swarm and bid by ids
     @swarm_request = SwarmRequest.find(params[:swarm_request_id])
+    @bid = Bid.find(params[:bid_id])
+
+    # Step two associate the bid with the swarm and mark the swarm as accepted
+    @bid.update_attributes(:swarm_request_id => @swarm_request.id)
     @swarm_request.update_attributes(:accepted => true)
+
+    # Step three, send out a notification
     UserMailer.accept_bid_notification(@swarm_request).deliver
-    # also update the bid with any details here?
+
     respond_to do |format|
         format.html { redirect_to(@swarm_request, :notice => 'Bid Accepted.') }
         format.xml  { head :ok }
